@@ -14,11 +14,24 @@
         <xsl:for-each-group select="//sp" group-by="@who">
             <xsl:sort select="@who"/>
             
-            <xsl:value-of select="current-grouping-key()"/><xsl:text>&#x9;</xsl:text><xsl:value-of select="count(current-group())"/><xsl:text>&#x9;</xsl:text>
+            <xsl:value-of select="/TEI/teiHeader/profileDesc/particDesc/listPerson/person[@xml:id=substring(current-grouping-key(), 2)]/persName[@type='standard']"/><xsl:text>&#x9;</xsl:text>
+            <xsl:value-of select="current-grouping-key()"/><xsl:text>&#x9;</xsl:text>
+            <xsl:value-of select="count(current-group())"/><xsl:text>&#x9;</xsl:text>
         
             <xsl:for-each select="key('speeches', current-grouping-key())">
-                <xsl:for-each select="child::*[name()!='speaker']">
-                    <xsl:value-of select="normalize-space(.)"/>
+                <xsl:for-each select="*[name()!='speaker']">
+                    <xsl:choose>
+                        <xsl:when test="descendant-or-self::node()[matches(normalize-space(.), '.*-') and following-sibling::lb]">
+                            <xsl:call-template name="stripHyphens">
+                                <xsl:with-param name="content" select="."/>
+                            </xsl:call-template>
+                            <xsl:message>aha!                             <xsl:value-of select="normalize-space(.)"/>
+                            </xsl:message>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="normalize-space(.)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     <xsl:text> </xsl:text>
                 </xsl:for-each>
             </xsl:for-each>
@@ -28,4 +41,23 @@
         
     </xsl:template>
     
+    <xsl:template name="stripHyphens">
+        <xsl:param name="content"/>
+        
+        <xsl:variable name="temp" select="$content"/>
+        <xsl:message>*<xsl:value-of select="$temp"/>* <xsl:value-of select="name($content)"/></xsl:message>
+        <xsl:for-each select="$content/node()">
+            <xsl:choose>
+                <xsl:when test="ends-with(normalize-space(.), '-') and following-sibling::lb">
+                    <xsl:value-of select="substring(normalize-space(.), 0, string-length(normalize-space(.)))"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="normalize-space(.)"/>
+                    
+                </xsl:otherwise>
+            </xsl:choose>
+            
+            
+        </xsl:for-each>
+    </xsl:template>
 </xsl:stylesheet>
