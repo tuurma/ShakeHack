@@ -21,7 +21,7 @@
             <xsl:for-each select="key('speeches', current-grouping-key())">
                 <xsl:for-each select="*[name()!='speaker']">
                     <xsl:choose>
-                        <xsl:when test="descendant-or-self::node()[matches(normalize-space(.), '.*-') and following-sibling::lb]">
+                        <xsl:when test="descendant-or-self::node()[matches(normalize-space(.), '.*[-­]') and following-sibling::lb]">
                             <xsl:call-template name="stripHyphens">
                                 <xsl:with-param name="content" select="."/>
                             </xsl:call-template>
@@ -47,8 +47,9 @@
         <xsl:variable name="temp" select="$content"/>
         <xsl:message>*<xsl:value-of select="$temp"/>* <xsl:value-of select="name($content)"/></xsl:message>
         <xsl:for-each select="$content/node()">
+            <!-- this one probably won't work for deeply nested hyphens, but let's leave it for now -->
             <xsl:choose>
-                <xsl:when test="ends-with(normalize-space(.), '-') and following-sibling::lb">
+                <xsl:when test="(ends-with(normalize-space(.), '-') or ends-with(normalize-space(.), '­')) and following-sibling::lb">
                     <xsl:value-of select="substring(normalize-space(.), 0, string-length(normalize-space(.)))"/>
                 </xsl:when>
                 <xsl:otherwise>
